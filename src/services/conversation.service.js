@@ -68,3 +68,13 @@ export const getUserConversations = async ( userId ) => {
 
     return conversations
 }
+
+export const updateLatestMessage = async ( conver_id, message ) => {
+    const updatedConver = await ConversationModel.findByIdAndUpdate(conver_id, {
+      latestMessage: message,
+    })
+
+    if (!updatedConver) throw createHttpError.BadRequest('Something went wrong');
+  
+    return updatedConver;
+  };
