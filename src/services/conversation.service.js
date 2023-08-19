@@ -43,3 +43,28 @@ export const populateConversation = async ( id, fieldPopulate, fieldRemove  ) =>
     return populateConver;
 
 }
+
+export const getUserConversations = async ( userId ) => {
+
+    let conversations;
+
+    await ConversationModel.find({
+        users: { $elemMatch: { $eq: userId } }
+    })
+    .populate('users', '-password')
+    .populate('admin', '-password')
+    .populate('latestMessage')
+    .sort({ updatedAt: -1 })
+    .then( async ( results ) => {
+        results = await UserModel.populate(results, {
+            path: 'latestMessage.sender',
+            select: 'name email picture status'
+        })
+        conversations = results
+    })
+    .catch(( error ) => {
+        throw createHttpError.BadGateway('!ops something went wrong')
+    })
+
+    return conversations
+}
