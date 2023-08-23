@@ -25,6 +25,7 @@ export const create_open_conversation = async(req, res, next) => {
 
             let converData = {
                 name: receiver_user.name,
+                picture: receiver_user.picture,
                 isGroup: false,
                 users: [ sender_id, receiver_id ]
             }
@@ -33,7 +34,7 @@ export const create_open_conversation = async(req, res, next) => {
 
             const populateConver = await populateConversation( newConver._id, 'users', '-password' )
 
-            res.status(400).json( populateConver )
+            res.status(200).json( populateConver )
         }
 
     } catch (error) {
