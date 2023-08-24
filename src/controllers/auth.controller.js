@@ -58,8 +58,7 @@ export const login = async(req, res, next) => {
         res.cookie('refreshtoken', refresh_token, {
             httpOnly: true,
             path: '/api/v1/auth/refreshtoken',
-            maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-
+            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         })
 
         res.json({
@@ -86,7 +85,7 @@ export const logout = async(req, res, next) => {
         
         res.clearCookie('refreshtoken', {  path: '/api/v1/auth/refreshtoken', })
 
-        res.json({ message: 'Logged out' })
+        res.json({ message: 'logged out' })
 
     } catch (error) {
        next(error)
@@ -97,15 +96,21 @@ export const logout = async(req, res, next) => {
 export const refreshToken = async(req, res, next) => {
 
     try {
-        
-        const refresh_token = req.cookies.refreshtoken
-        if( !refreshToken ) throw createHttpError.Unauthorized('Please login')
 
-        const check = await verifyToken(refresh_token, process.env.REFRESH_TOKEN_SECRET)
+        
+        const token = req.body.token
+        const refresh_token = req.cookies.refreshtoken
+        if(  !token ) throw createHttpError.Unauthorized('Please login')
+
+
+        const check = await verifyToken(
+                refresh_token ? refresh_token :  token, 
+                refresh_token ? process.env.REFRESH_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET 
+            )
 
         const user = await findUser(check.userId)
 
-        const access_token = await generateToken({ userId: user._id }, '1d', process.env.ACCESS_TOKEN_SECRET )
+        const access_token = await generateToken({ userId: user._id }, '1d', refresh_token ? process.env.REFRESH_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET )
 
         res.json({
             user: {

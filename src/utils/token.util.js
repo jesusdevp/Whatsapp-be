@@ -21,7 +21,7 @@ export const verify = ( token, secret ) => {
         jwt.verify( token, secret, (error, payload) => {
             if( error ) {
                 logger.error( error )
-                resolve()
+                resolve( null )
             } else {
                 resolve( payload )
             }
