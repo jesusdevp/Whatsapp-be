@@ -3,6 +3,7 @@ import app from './app.js'
 import mongoose from 'mongoose';
 import logger from './configs/logger.config.js'
 import { Server } from 'socket.io'
+import SocketServer from './SocketServer.js';
 
 // env variables
 const { DATABASE_URL } = process.env;
@@ -44,10 +45,8 @@ const io = new Server(server, {
 
 io.on('connection', (socket) => {
     logger.info('socket io connected successfully.')
-    
-    socket.on('sendMessage', (msg) => {
-        io.emit('receiveMessage', msg)
-    })
+
+    SocketServer(socket)
 })
 
 // handle errors server
