@@ -2,26 +2,45 @@ import createHttpError from "http-errors"
 import { ConversationModel, UserModel } from "../models/index.js"
 
 
-export const doesConversationExist = async ( sender_id, receiver_id ) => {
+export const doesConversationExist = async ( sender_id, receiver_id, isGroup ) => {
 
-    let convers = await ConversationModel.find({
-        isGroup: false,
-        $and: [
-            { users: { $elemMatch: { $eq: sender_id } } },
-            { users: { $elemMatch: { $eq: receiver_id } } }
-        ]
-    })
-    .populate('users', '-password')
-    .populate('latestMessage')
+    if( isGroup === false ) {
+        let convers = await ConversationModel.find({
+            isGroup: false,
+            $and: [
+                { users: { $elemMatch: { $eq: sender_id } } },
+                { users: { $elemMatch: { $eq: receiver_id } } }
+            ]
+        })
+        .populate('users', '-password')
+        .populate('latestMessage')
+    
+        if( !convers ) throw createHttpError.BadGateway('!ops something went wrong')
+    
+        convers = await UserModel.populate(convers, {
+            path: 'latestMessage.sender',
+            select: 'name email picture status'
+        })
+    
+        return convers[0]
+    } else { 
 
-    if( !convers ) throw createHttpError.BadGateway('!ops something went wrong')
+        // is group chat
 
-    convers = await UserModel.populate(convers, {
-        path: 'latestMessage.sender',
-        select: 'name email picture status'
-    })
+        let conver = await ConversationModel.findById(isGroup)
+            .populate('users admin', '-password')
+            .populate('latestMessage');
 
-    return convers[0]
+        if (!conver)
+        throw createHttpError.BadRequest('Something went wrong');
+        //populate message model
+        conver = await UserModel.populate(conver, {
+            path: 'latestMessage.sender',
+            select: 'name email picture status',
+        });
+
+        return conver;
+    }
 
 }
 
