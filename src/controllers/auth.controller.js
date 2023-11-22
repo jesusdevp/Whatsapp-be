@@ -1,5 +1,5 @@
 import createHttpError from "http-errors";
-import { createUser, signUser } from "../services/auth.service.js";
+import { checkUserEmailDB, createUser, signUser } from "../services/auth.service.js";
 import { generateToken, verifyToken } from "../services/token.service.js";
 import { findUser } from "../services/user.service.js";
 
@@ -125,6 +125,22 @@ export const refreshToken = async(req, res, next) => {
 
     } catch (error) {
        next(error)
+    }
+
+}
+
+export const checkUserEmail = async (req, res, next) => {
+
+    const { email } = req.body
+
+    try {
+        
+       const existEmailDB = await checkUserEmailDB(email)
+
+       res.json({ existEmailDB })
+
+    } catch (error) {
+        next(error)
     }
 
 }

@@ -74,3 +74,15 @@ export const signUser = async ( email, password ) => {
     return user
 
 }
+
+export const checkUserEmailDB = async (email) => {
+    // check if fields are empty
+    if(!email) {
+        throw createHttpError.BadRequest('Please fill email field')
+    }
+
+    const checkUserDB = await UserModel.findOne({ email })
+    
+
+    return !!checkUserDB
+}
