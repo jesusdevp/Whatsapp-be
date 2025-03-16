@@ -59,7 +59,8 @@ export default function (socket, io) {
             signal: data.signal,
             from: data.from,
             name: data.name,
-            picture: data.picture
+            picture: data.picture,
+            receiveingCall: data.receiveingCall
         })
     })
 
@@ -72,4 +73,5 @@ export default function (socket, io) {
     socket.on('end call', (id) => {
         io.to(id).emit('end call')
     })
+
 }
