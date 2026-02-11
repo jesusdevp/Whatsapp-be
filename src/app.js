@@ -10,42 +10,36 @@ import cors from 'cors'
 import createHttpError from 'http-errors'
 import routes from './routes/index.js'
 
-// dot config
 dotenv.config()
 
-// create express app
 const app = express()
 
-// morgan
-if( process.env.NODE_ENV !== 'production' ) {
-    app.use( morgan('dev') )
+if (process.env.NODE_ENV !== 'production') {
+    app.use(morgan('dev'))
 }
 
-// helmet
-app.use( helmet() )
+app.use(helmet())
 
-// parse JSON request url
-app.use( express.json() )
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
+app.use(mongoSanitize())
+app.use(cookieParser())
+app.use(compression())
 
-// parse JSON request body
-app.use( express.urlencoded({ extended: true }) )
-
-// sanitize request data
-app.use( mongoSanitize() )
-
-// enabled cookie parser
-app.use( cookieParser() )
-
-// gzip compression
-app.use( compression() )
-
-// file upload
-app.use( fileUpload({
+app.use(fileUpload({
     useTempFiles: true
 }))
 
-// cors
-app.use( cors() )
+export const allowedOrigins = [process.env.CLIENT_ENDPOINT, 'http://localhost:5173'].filter(Boolean);
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
+app.options('*', cors({ origin: allowedOrigins, credentials: true }));
 
 // routes
 app.use('/api/v1', routes)
@@ -54,10 +48,8 @@ app.use(async (req, res, next) => {
     next(createHttpError.NotFound('This route does not exist'))
 })
 
-// error handling
 app.use(async (err, req, res, next) => {
-    res.status(err.status || 500)
-    res.send({
+    res.status(err.status || 500).send({
         error: {
             status: err.status || 500,
             message: err.message
@@ -65,4 +57,4 @@ app.use(async (err, req, res, next) => {
     })
 })
 
-export default app;
+export default app
